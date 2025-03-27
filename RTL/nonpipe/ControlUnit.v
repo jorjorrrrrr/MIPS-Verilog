@@ -33,10 +33,10 @@ module ControlUnit (
     output              lhr_wen,
     output              lhr_ren,
     output              lhr_is_hi,
-    output              branch,
+    output              branch_beq,
+    output              branch_bne,
     output              jump,
-    output              jump_reg,
-    output              overflow
+    output              jump_reg
 );
 
 reg  [1:0] inst_type;
@@ -238,17 +238,11 @@ assign lhr_ren = (inst_type == `R_TYPE) & (
 assign lhr_is_hi = (inst_type == `R_TYPE) & (funct == `MFHI);
 
 //// Branch (BEQ, BNE) ////
-assign branch = (alu_zero & (op == `BEQ)) | (~alu_zero & (op == `BNE));
+assign branch_beq = (op == `BEQ);
+assign branch_bne = (op == `BNE);
 
 //// Jump (J, JAL, JR) ////
 assign jump = (inst_type == `J_TYPE);
 assign jump_reg = (inst_type == `R_TYPE) & (funct == `JR); 
-
-//// Overflow Detection ////
-assign overflow = (inst_type == `R_TYPE) & (
-                    (funct == `ADD)  | 
-                    (funct == `ADDI) | 
-                    (funct == `SUB)
-                );
 
 endmodule
