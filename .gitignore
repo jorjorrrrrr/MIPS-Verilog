@@ -1,0 +1,10 @@
+SIM/*/compile.log
+SIM/*/csrc/
+SIM/*/novas.fsdb
+SIM/*/novas_dump.log
+SIM/*/simv
+SIM/*/simv.daidir/
+SIM/*/ucli.key
+SIM/*/verdi_config_file
+SIM/*/verilog.dump
+

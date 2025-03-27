@@ -1,0 +1,210 @@
+Command: vcs -kdb -R -full64 -sverilog +v2k +notimingcheck -debug_acc +nospecify \
++vcs+flush+all -debug_access -l compile.log ./testbench/tb_cpu.sv ../../RTL/nonpipe/ArithmeticLogicUnit.v \
+../../RTL/nonpipe/ControlUnit.v ../../RTL/nonpipe/CPU.v ../../RTL/nonpipe/DataMemory.v \
+../../RTL/nonpipe/FA.v ../../RTL/nonpipe/HA.v ../../RTL/nonpipe/InstructionMemory.v \
+../../RTL/nonpipe/LoHiRegister.v ../../RTL/nonpipe/MultDiv.v ../../RTL/nonpipe/ProgramCounter.v \
+../../RTL/nonpipe/RegisterFile.v
+*** Using c compiler gcc instead of cc ...
+                         Chronologic VCS (TM)
+         Version V-2023.12_Full64 -- Thu Mar 27 13:43:28 2025
+
+                    Copyright (c) 1991 - 2023 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Parsing design file './testbench/tb_cpu.sv'
+Parsing included file '../../RTL/def/def_inst_type.v'.
+Back to file './testbench/tb_cpu.sv'.
+Parsing design file '../../RTL/nonpipe/ArithmeticLogicUnit.v'
+Parsing design file '../../RTL/nonpipe/ControlUnit.v'
+Parsing included file '../../RTL/def/def_data_type.v'.
+Back to file '../../RTL/nonpipe/ControlUnit.v'.
+Parsing included file '../../RTL/def/def_inst.v'.
+Back to file '../../RTL/nonpipe/ControlUnit.v'.
+Parsing included file '../../RTL/def/def_inst_type.v'.
+Back to file '../../RTL/nonpipe/ControlUnit.v'.
+Parsing design file '../../RTL/nonpipe/CPU.v'
+Parsing design file '../../RTL/nonpipe/DataMemory.v'
+Parsing design file '../../RTL/nonpipe/FA.v'
+Parsing design file '../../RTL/nonpipe/HA.v'
+Parsing design file '../../RTL/nonpipe/InstructionMemory.v'
+Parsing design file '../../RTL/nonpipe/LoHiRegister.v'
+Parsing design file '../../RTL/nonpipe/MultDiv.v'
+Parsing design file '../../RTL/nonpipe/ProgramCounter.v'
+Parsing design file '../../RTL/nonpipe/RegisterFile.v'
+Top Level Modules:
+       tb_cpu
+TimeScale is 1 ns / 100 ps
+Starting vcs inline pass...
+
+2 modules and 0 UDP read.
+recompiling module tb_cpu
+	However, due to incremental compilation, only 1 module needs to be compiled. 
+make[1]: Entering directory '/home/jorjor/Projects/mips/SIM/nonpipe/csrc'
+rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
+if [ -x ../simv ]; then chmod a-x ../simv; fi
+g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
+-Wl,-rpath=/usr/cad/synopsys/vcs/2023.12/linux64/lib -L/usr/cad/synopsys/vcs/2023.12/linux64/lib \
+-Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _636310_archive_1.so \
+_prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
+rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
+-luclinative /usr/cad/synopsys/vcs/2023.12/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
+-lvcsucli    -Wl,-no-whole-archive        _vcs_pli_stub_.o   /usr/cad/synopsys/vcs/2023.12/linux64/lib/vcs_save_restore_new.o \
+/usr/cad/synopsys/verdi/2023.12/share/PLI/VCS/LINUX64/pli.a -ldl  -lc -lm -lpthread \
+-ldl 
+../simv up to date
+make[1]: Leaving directory '/home/jorjor/Projects/mips/SIM/nonpipe/csrc'
+Command: /home/jorjor/Projects/mips/SIM/nonpipe/./simv +v2k +notimingcheck +nospecify +vcs+flush+all -a compile.log
+Chronologic VCS simulator copyright 1991-2023
+Contains Synopsys proprietary information.
+Compiler version V-2023.12_Full64; Runtime version V-2023.12_Full64;  Mar 27 13:43 2025
+*Verdi* Loading libsscore_vcs202312.so
+FSDB Dumper for VCS, Release Verdi_V-2023.12, Linux x86_64/64bit, 11/15/2023
+(C) 1996 - 2023 by Synopsys, Inc.
+*Verdi* FSDB WARNING: The FSDB file already exists. Overwriting the FSDB file may crash the programs that are using this file.
+*Verdi* : Create FSDB file 'novas.fsdb'
+*Verdi* : Begin traversing the scopes, layer (0).
+*Verdi* WARNING: Var 'mem' will be ignored because its total element is larger than or equal to 1073741824.
+*Verdi* : End of traversing.
+*Verdi* : Begin traversing the MDAs, layer (0).
+*Verdi* : Enable +mda and +packedmda dumping.
+*Verdi* : End of traversing the MDAs.
+==============================================================
+    Pattern : Testing all instruction                          
+==============================================================
+and[Test1] pass
+and[Test2] pass
+and[Test3] pass
+addu[Test1] pass
+addu[Test2] pass
+addu[Test3] pass
+addi[Test1] pass
+addi[Test2] pass
+addi[Test3] pass
+addiu[Test1] pass
+addiu[Test2] pass
+addiu[Test3] pass
+andi[Test1] pass
+andi[Test2] pass
+andi[Test3] pass
+nor[Test1] pass
+nor[Test2] pass
+nor[Test3] pass
+or[Test1] pass
+or[Test2] pass
+or[Test3] pass
+ori[Test1] pass
+ori[Test2] pass
+ori[Test3] pass
+sll[Test1] pass
+sll[Test2] pass
+sll[Test3] pass
+sra[Test1] pass
+sra[Test2] pass
+sra[Test3] pass
+srl[Test1] pass
+srl[Test2] pass
+srl[Test3] pass
+sub[Test1] pass
+sub[Test2] pass
+sub[Test3] pass
+subu[Test1] pass
+subu[Test2] pass
+subu[Test3] pass
+xor[Test1] pass
+xor[Test2] pass
+xor[Test3] pass
+xori[Test1] pass
+xori[Test2] pass
+xori[Test3] pass
+slt[Test1] pass
+slt[Test2] pass
+slt[Test3] pass
+sltu[Test1] pass
+sltu[Test2] pass
+sltu[Test3] pass
+sltiu[Test1] pass
+sltiu[Test2] pass
+sltiu[Test3] pass
+beq[Test1] pass
+beq[Test2] pass
+beq[Test3] pass
+bne[Test1] pass
+bne[Test2] pass
+bne[Test3] pass
+j[Test1] pass
+j[Test2] pass
+j[Test3] pass
+lui[Test1] pass
+lui[Test2] pass
+lui[Test3] pass
+lw[Test1] pass
+lw[Test2] pass
+lw[Test3] pass
+lb[Test1] pass
+lb[Test2] pass
+lb[Test3] pass
+lbu[Test1] pass
+lbu[Test2] pass
+lbu[Test3] pass
+lh[Test1] pass
+lh[Test2] pass
+lh[Test3] pass
+lhu[Test1] pass
+lhu[Test2] pass
+lhu[Test3] pass
+sw[Test1] pass
+sw[Test2] pass
+sw[Test3] pass
+sb[Test1] pass
+sb[Test2] pass
+sb[Test3] pass
+sh[Test1] pass
+sh[Test2] pass
+sh[Test3] pass
+mult[Test1] pass
+mult[Test2] pass
+mult[Test3] pass
+multu[Test1] pass
+multu[Test2] pass
+multu[Test3] pass
+div[Test1] pass
+div[Test2] pass
+div[Test3] pass
+divu[Test1] pass
+divu[Test2] pass
+divu[Test3] pass
+mfhi[Test1] pass
+mfhi[Test2] pass
+mfhi[Test3] pass
+        ____________________
+       |                    |
+       |     ALL  PASS!      |
+       |____________________|
+            \  ||  /
+             \ || /
+              \||/
+         /\_/\  ||
+        ( o.o ) ||
+        (> ^ <)//
+Program End.
+$finish called from file "./testbench/tb_cpu.sv", line 215.
+$finish at simulation time 24100.0 ns
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 24100000 ps
+CPU Time:      0.200 seconds;       Data structure size:   0.1Mb
+Thu Mar 27 13:43:34 2025
+CPU time: .351 seconds to compile + .217 seconds to elab + .208 seconds to link + .227 seconds in simulation
+Verdi KDB elaboration done and the database successfully generated: 0 error(s), 0 warning(s)
