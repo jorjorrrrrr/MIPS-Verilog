@@ -7,4 +7,5 @@ SIM/*/simv.daidir/
 SIM/*/ucli.key
 SIM/*/verdi_config_file
 SIM/*/verilog.dump
-
+*.swp
+*.fsdb.*
