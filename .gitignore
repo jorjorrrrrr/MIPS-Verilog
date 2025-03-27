@@ -9,3 +9,5 @@ SIM/*/verdi_config_file
 SIM/*/verilog.dump
 *.swp
 *.fsdb.*
+LOG/
+*/LOG/*
