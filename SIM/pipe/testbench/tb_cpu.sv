@@ -108,9 +108,11 @@ CPU U1 (
 
 initial begin
     $timeformat(-9, 1, " ns", 9); //Display time in nanoseconds
+`ifdef FSDB
     $dumpvars;
 	$fsdbDumpvars;
 	$fsdbDumpMDA;
+`endif
 end
 
 initial begin
