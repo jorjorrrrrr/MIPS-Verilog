@@ -36,7 +36,8 @@ module ControlUnit (
     output              branch_beq,
     output              branch_bne,
     output              jump,
-    output              jump_reg
+    output              jump_reg,
+    output              syscall
 );
 
 reg  [1:0] inst_type;
@@ -244,5 +245,8 @@ assign branch_bne = (op == `BNE);
 //// Jump (J, JAL, JR) ////
 assign jump = (inst_type == `J_TYPE);
 assign jump_reg = (inst_type == `R_TYPE) & (funct == `JR); 
+
+//// System Call ////
+assign syscall = (inst_type == `SYSCALL);
 
 endmodule

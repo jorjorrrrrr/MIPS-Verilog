@@ -13,7 +13,8 @@
 module CPU (
     input   clk,        // Clock Source
     input   rst,        // Active high async reset
-    output  overflow
+    output  overflow,
+    output  syscall
 );
 
 // ======================================================
@@ -101,6 +102,7 @@ wire        cu_branch_beq;
 wire        cu_branch_bne;
 wire        cu_jump;
 wire        cu_jump_reg;
+wire        cu_syscall;
 
 
 // ******************************************************
@@ -317,11 +319,13 @@ ControlUnit u_CU (
     .branch_beq     (cu_branch_beq),
     .branch_bne     (cu_branch_bne),
     .jump           (cu_jump),
-    .jump_reg       (cu_jump_reg)
+    .jump_reg       (cu_jump_reg),
+    .syscall        (cu_syscall)
 );
 
 //// Overflow Detection ////
 assign overflow = alu_overflow;
+assign syscall  = cu_syscall;
 
 
 endmodule

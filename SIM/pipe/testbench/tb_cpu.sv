@@ -1,8 +1,6 @@
 `timescale 1ns/100ps
 `define cycle 10.0
 
-`include "../../RTL/def/def_inst_type.v"
-
 `define MAX_CYCLE 100000000
 
 `ifdef P1
@@ -93,6 +91,7 @@ module tb_cpu;
 reg     clk;
 reg     rst;
 wire    overflow;
+wire    syscall;
 
 integer i;
 integer err;
@@ -103,7 +102,8 @@ string str;
 CPU U1 (
     .clk      (clk),
     .rst      (rst),
-    .overflow (overflow)
+    .overflow (overflow),
+    .syscall  (syscall)
 );
 
 initial begin
@@ -169,7 +169,7 @@ initial begin
 end
 
 always @(negedge clk) begin
-    if (U1.u_CU.inst_type == `SYSCALL) begin
+    if (syscall == 1'b1) begin
         case(`v0)
             `print_int    : $write("%d", `a0);  
             //`print_float  : $write("%d");
