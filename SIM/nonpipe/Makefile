@@ -37,31 +37,31 @@ all: test_cpu
 
 test_adder: 
 	$(VCS_RUN) $(SRC_MODULE) +define+RCA32
-	$(call log, "../../LOG/adder/rca32")
+	$(call log, "./LOG/adder/rca32")
 	$(VCS_RUN) $(SRC_MODULE) +define+CLA32
-	$(call log, "../../LOG/adder/cla32")
+	$(call log, "./LOG/adder/cla32")
 	$(VCS_RUN) $(SRC_MODULE) +define+MCLA32
-	$(call log, "../../LOG/adder/mcla32")
+	$(call log, "./LOG/adder/mcla32")
 
 test_cpu: 
 	$(VCS_RUN) $(SRC) +define+P1+PRINT
-	$(call log, "../../LOG/cpu/cpu_pattern1")
+	$(call log, "./LOG/cpu/cpu_pattern1")
 	$(VCS_RUN) $(SRC) +define+P2
-	$(call log, "../../LOG/cpu/cpu_pattern2")
+	$(call log, "./LOG/cpu/cpu_pattern2")
 	$(VCS_RUN) $(SRC) +define+P3
-	$(call log, "../../LOG/cpu/cpu_pattern3")
+	$(call log, "./LOG/cpu/cpu_pattern3")
 	$(VCS_RUN) $(SRC) +define+P4
-	$(call log, "../../LOG/cpu/cpu_pattern4")
+	$(call log, "./LOG/cpu/cpu_pattern4")
 	$(VCS_RUN) $(SRC) +define+P5+PRINT
-	$(call log, "../../LOG/cpu/cpu_pattern5")
+	$(call log, "./LOG/cpu/cpu_pattern5")
 	$(VCS_RUN) $(SRC) +define+P6+PRINT
-	$(call log, "../../LOG/cpu/cpu_pattern6")
+	$(call log, "./LOG/cpu/cpu_pattern6")
 	$(VCS_RUN) $(SRC) +define+P7+PRINT
-	$(call log, "../../LOG/cpu/cpu_pattern7")
+	$(call log, "./LOG/cpu/cpu_pattern7")
 	$(VCS_RUN) $(SRC) +define+P8+PRINT
-	$(call log, "../../LOG/cpu/cpu_pattern8")
+	$(call log, "./LOG/cpu/cpu_pattern8")
 	$(VCS_RUN) $(SRC)
-	$(call log, "../../LOG/cpu/cpu")
+	$(call log, "./LOG/cpu/cpu")
 
 # pre-simulation + Code Coverage
 test_cpu_cc: 
