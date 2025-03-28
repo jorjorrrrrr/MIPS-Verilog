@@ -300,8 +300,6 @@ ControlUnit u_CU (
     // input
     .op             (op),
     .funct          (funct),
-    .alu_zero       (alu_zero),
-    .alu_overflow   (alu_overflow),
     // output
     .sel_rf_wdata   (cu_sel_rf_wdata),       // Selection for wdata of Register File
     .sel_rf_waddr   (cu_sel_rf_waddr),

@@ -18,8 +18,6 @@
 module ControlUnit (
     input       [5:0]   op,
     input       [5:0]   funct,
-    input               alu_zero,           // Zero detection
-    input               alu_overflow,       // Overflow detection
     output reg  [2:0]   sel_rf_wdata,       // Selection for wdata of Register File
     output reg  [1:0]   sel_rf_waddr,
     output              rf_wen,
