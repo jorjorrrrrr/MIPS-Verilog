@@ -31,6 +31,23 @@ reg [31:0] register [0:31];
 assign rdata0 = register[raddr0];
 assign rdata1 = register[raddr1];
 
+// reg [31:0] rdata0_r;
+// reg [31:0] rdata1_r;
+// 
+// assign rdata0 = rdata0_r;
+// assign rdata1 = rdata1_r;
+// 
+// always @(posedge clk or posedge rst) begin
+//     if (rst) begin
+//         rdata0_r <= 32'b0;
+//         rdata1_r <= 32'b0;
+//     end
+//     else begin
+//         rdata0_r <= register[raddr0];
+//         rdata1_r <= register[raddr1];
+//     end
+// end
+
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         register[0] <= 32'b0;

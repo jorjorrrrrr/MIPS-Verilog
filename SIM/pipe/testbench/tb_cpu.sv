@@ -7,6 +7,10 @@
     `define INST_PATH "./pattern/pattern1/instruction.hex"
     `define DATA_PATH "./pattern/pattern1/memory.hex"
     string start_msg = "    Pattern 1 : Arithmetic Operation                           ";
+`elsif P1_1
+    `define INST_PATH "./pattern/pattern1_1/instruction.hex"
+    `define DATA_PATH "./pattern/pattern1_1/memory.hex"
+    string start_msg = "    Pattern 1_1 : Arithmetic Operation (insert 5 nop)          ";
 `elsif P2
     `define INST_PATH "./pattern/pattern2/instruction.hex"
     `define DATA_PATH "./pattern/pattern2/memory.hex"

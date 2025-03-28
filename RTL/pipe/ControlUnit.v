@@ -27,6 +27,7 @@ module ControlUnit (
     output              dm_sign_extend,
     output              md_is_mult,
     output              md_is_unsigned,
+    output              lhr_is_mult,
     output              lhr_wen,
     output              lhr_ren,
     output              lhr_is_hi,
@@ -231,6 +232,7 @@ assign md_is_mult = (inst_type == `R_TYPE) & ((funct == `MULT) | (funct == `MULT
 assign md_is_unsigned = (inst_type == `R_TYPE) & ((funct == `DIVU) | (funct == `MULTU));
 
 //// Lo/Hi Register ////
+assign lhr_is_mult  = md_is_mult;
 assign lhr_wen = (inst_type == `R_TYPE) & (
                         (funct == `MULT)    | 
                         (funct == `MULTU)   |
