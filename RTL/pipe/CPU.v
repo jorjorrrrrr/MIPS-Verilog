@@ -36,7 +36,7 @@ wire [4:0]  rt;
 wire [4:0]  rd;
 wire [4:0]  shamt;
 //wire [5:0]  funct;
-wire [15:0] immediate;
+wire [15:0] imm;
 wire [25:0] target_address;
 // ======================================================
 // The signals of Register File
@@ -108,7 +108,7 @@ wire        cu_syscall;
 // ******************************************************
 // ** Program Counter ** //
 assign pc_plus_4 = pc_next + 32'd4;
-assign pc_plus_4_imm = pc_plus_4 + {{14{immediate[15]}}, immediate[15:0], 2'b00};
+assign pc_plus_4_imm = pc_plus_4 + {{14{imm[15]}}, imm[15:0], 2'b00};
 assign target_reg_address = rf_a;
 
 ProgramCounter u_PC (
@@ -148,13 +148,13 @@ assign rd = inst[15:11];
 assign shamt = inst[10:6];
 //assign funct = inst[5:0];
 
-// I-type : op || rs || rt || immediate
+// I-type : op || rs || rt || imm
 // exmaple. lw rt, rs, imm
 // example. addi rt, rs, imm
 //assign op = inst[31:26];
 //assign rs = inst[25:21];
 //assign rt = inst[20:16];
-assign immediate = inst[15:0];
+assign imm = inst[15:0];
 
 // J-type : op || target address
 // example. j target
@@ -196,7 +196,7 @@ assign rf_wen       = cu_rf_wen;
 always @(*) begin
     case(sel_rf_wdata)
         3'b000  : rf_wdata = dm_data;            // Load data from Data Memory
-        3'b001  : rf_wdata = {immediate, 16'b0}; // Load data from immediate
+        3'b001  : rf_wdata = {imm, 16'b0};       // Load data from imm
         3'b010  : rf_wdata = pc_plus_4;          // Load data to $ra
         3'b011  : rf_wdata = lhr_rdata;          // Load data from Lo/Hi Register
         default : rf_wdata = alu_result;         // Load alu result
@@ -235,8 +235,8 @@ assign sel_alu_b = cu_sel_alu_b;
 assign alu_a     = (sel_alu_b == 2'b10) ? rf_b : rf_a;
 always @(*) begin
     case(sel_alu_b)
-        2'b00 : alu_b = {16'b0, immediate};
-        2'b01 : alu_b = {{16{immediate[15]}}, immediate};
+        2'b00 : alu_b = {16'b0, imm};
+        2'b01 : alu_b = {{16{imm[15]}}, imm};
         2'b10 : alu_b = {27'b0, shamt};
         default : alu_b = rf_b;
     endcase
