@@ -11,3 +11,5 @@ SIM/*/verilog.dump
 *.fsdb.*
 LOG/
 */LOG/*
+novas.conf
+verdiLog
