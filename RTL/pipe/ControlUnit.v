@@ -16,9 +16,8 @@
 `include "../../RTL/def/def_inst_type.v"
 
 module ControlUnit (
-    input       [5:0]   op,
-    input       [5:0]   funct,
-    output reg  [2:0]   sel_rf_wdata,       // Selection for wdata of Register File
+    input       [31:0]  inst,
+    output reg  [2:0]   sel_rf_wdata,
     output reg  [1:0]   sel_rf_waddr,
     output              rf_wen,
     output reg  [5:0]   alu_op,
@@ -38,6 +37,10 @@ module ControlUnit (
     output              syscall
 );
 
+wire [5:0] op;
+wire [5:0] funct;
+wire nop;   // no operation
+
 reg  [1:0] inst_type;
 
 wire set_load; 
@@ -48,9 +51,15 @@ wire set_imm;
 wire zero_extend;
 wire set_shamt;
 
+//// Decode instruction ////
+assign op = inst[31:26];
+assign funct = inst[5:0];
+
+assign nop = ~|inst;
+
 //// Determine the type of instruction and decide the operations ////
 always @(*) begin
-    if (op == 6'b000000 && funct == 6'b001100) begin
+    if (inst == 32'h0000000C ) begin
         inst_type = `SYSCALL;
     end
     else if (op == 6'b000000) begin
@@ -96,7 +105,7 @@ always @(*) begin
     endcase
 end
 
-assign rf_wen = (inst_type == `R_TYPE)  | 
+assign rf_wen = (inst_type == `R_TYPE & (!nop))  | 
                 (op == `JAL)            | 
                 (op == `LW)             | 
                 (op == `LB)             |

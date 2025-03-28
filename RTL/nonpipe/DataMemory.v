@@ -7,7 +7,6 @@
 //
 // ======================================================================
 
-// synopsys translate_off
 `timescale 1ns/100ps
 
 `define BYTE_TYPE 2'b00
@@ -77,7 +76,6 @@ always @(posedge clk) begin
         end
     end
 end
-// synopsys translate_on
 
 endmodule
 

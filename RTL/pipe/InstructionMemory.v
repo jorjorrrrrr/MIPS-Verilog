@@ -15,16 +15,26 @@
 
 module InstructionMemory (
     input           clk,    // Clock Source
+    input           rst,
     input   [31:0]  addr,   // Read address (4 Giga btye)
     output  [31:0]  inst    // Instruction
 );
 
 localparam DEPTH = (1 << 12);
 
-// synopsys translate_off
 reg [31:0] mem [0:DEPTH-1];
+reg [31:0] inst_reg;
 
-assign inst = mem[addr[13:2]];
-// synopsys translate_on
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        inst_reg <= 32'b0;
+    end
+    else begin
+        inst_reg <= mem[addr[13:2]];
+    end
+end
+
+assign inst = inst_reg;
+//assign inst = mem[addr[13:2]];
 
 endmodule

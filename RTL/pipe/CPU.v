@@ -18,16 +18,6 @@ module CPU (
 );
 
 // ======================================================
-// For decoding instruction
-wire [5:0] op;
-wire [4:0] rs;
-wire [4:0] rt;
-wire [4:0] rd;
-wire [4:0] shamt;
-wire [5:0] funct;
-wire [15:0] immediate;
-wire [25:0] target_address;
-// ======================================================
 // The signals of Program Counter
 wire        branch; // generated after alu calculation
 wire        jump;
@@ -39,6 +29,15 @@ wire [31:0] pc_next;
 // ======================================================
 // The signals of Instruction Memory
 wire [31:0] inst;
+// For decoding instruction
+//wire [5:0]  op;
+wire [4:0]  rs;
+wire [4:0]  rt;
+wire [4:0]  rd;
+wire [4:0]  shamt;
+//wire [5:0]  funct;
+wire [15:0] immediate;
+wire [25:0] target_address;
 // ======================================================
 // The signals of Register File
 wire [2:0]  sel_rf_wdata;   // controlled by Control Unit
@@ -105,30 +104,6 @@ wire        cu_jump_reg;
 wire        cu_syscall;
 
 
-// ******************************************************
-// ** Decode Instruction ** //
-// R-type : op || rs || rt || rd || shamt || funct
-// example. add rd, rs, rt
-assign op = inst[31:26];
-assign rs = inst[25:21];
-assign rt = inst[20:16];
-assign rd = inst[15:11];
-assign shamt = inst[10:6];
-assign funct = inst[5:0];
-
-// I-type : op || rs || rt || immediate
-// exmaple. lw rt, rs, imm
-// example. addi rt, rs, imm
-//assign op = inst[31:26];
-//assign rs = inst[25:21];
-//assign rt = inst[20:16];
-assign immediate = inst[15:0];
-
-// J-type : op || target address
-// example. j target
-//assign op = inst[31:26];
-assign target_address = inst[25:0];
-
 
 // ******************************************************
 // ** Program Counter ** //
@@ -157,9 +132,59 @@ ProgramCounter u_PC (
 InstructionMemory u_IM (
     // input
     .clk    (clk), 
+    .rst    (rst),
     .addr   (pc_next),
     // output
     .inst   (inst) 
+);
+
+// ** Decode Instruction ** //
+// R-type : op || rs || rt || rd || shamt || funct
+// example. add rd, rs, rt
+//assign op = inst[31:26];
+assign rs = inst[25:21];
+assign rt = inst[20:16];
+assign rd = inst[15:11];
+assign shamt = inst[10:6];
+//assign funct = inst[5:0];
+
+// I-type : op || rs || rt || immediate
+// exmaple. lw rt, rs, imm
+// example. addi rt, rs, imm
+//assign op = inst[31:26];
+//assign rs = inst[25:21];
+//assign rt = inst[20:16];
+assign immediate = inst[15:0];
+
+// J-type : op || target address
+// example. j target
+//assign op = inst[31:26];
+assign target_address = inst[25:0];
+
+// ******************************************************
+// ** Control Unit ** //
+ControlUnit u_CU (
+    // input
+    .inst           (inst),
+    // output
+    .sel_rf_wdata   (cu_sel_rf_wdata),       // Selection for wdata of Register File
+    .sel_rf_waddr   (cu_sel_rf_waddr),
+    .rf_wen         (cu_rf_wen),
+    .alu_op         (cu_alu_op),
+    .sel_alu_b      (cu_sel_alu_b),        // Selection for ALU input b
+    .dm_wen         (cu_dm_wen),
+    .dm_type        (cu_dm_type),
+    .dm_sign_extend (cu_dm_sign_extend),
+    .md_is_mult     (cu_md_is_mult),    
+    .md_is_unsigned (cu_md_is_unsigned),
+    .lhr_wen        (cu_lhr_wen),    
+    .lhr_ren        (cu_lhr_ren),    
+    .lhr_is_hi      (cu_lhr_is_hi),
+    .branch_beq     (cu_branch_beq),
+    .branch_bne     (cu_branch_bne),
+    .jump           (cu_jump),
+    .jump_reg       (cu_jump_reg),
+    .syscall        (cu_syscall)
 );
 
 // ******************************************************
@@ -294,37 +319,11 @@ LoHiRegister u_LHR (
     .rdata  (lhr_rdata)   
 );
 
-// ******************************************************
-// ** Control Unit ** //
-ControlUnit u_CU (
-    // input
-    .op             (op),
-    .funct          (funct),
-    // output
-    .sel_rf_wdata   (cu_sel_rf_wdata),       // Selection for wdata of Register File
-    .sel_rf_waddr   (cu_sel_rf_waddr),
-    .rf_wen         (cu_rf_wen),
-    .alu_op         (cu_alu_op),
-    .sel_alu_b      (cu_sel_alu_b),        // Selection for ALU input b
-    .dm_wen         (cu_dm_wen),
-    .dm_type        (cu_dm_type),
-    .dm_sign_extend (cu_dm_sign_extend),
-    .md_is_mult     (cu_md_is_mult),    
-    .md_is_unsigned (cu_md_is_unsigned),
-    .lhr_wen        (cu_lhr_wen),    
-    .lhr_ren        (cu_lhr_ren),    
-    .lhr_is_hi      (cu_lhr_is_hi),
-    .branch_beq     (cu_branch_beq),
-    .branch_bne     (cu_branch_bne),
-    .jump           (cu_jump),
-    .jump_reg       (cu_jump_reg),
-    .syscall        (cu_syscall)
-);
-
 //// Overflow Detection ////
 assign overflow = alu_overflow;
-assign syscall  = cu_syscall;
 
+//// System Call ////
+assign syscall  = cu_syscall;
 
 endmodule
 
