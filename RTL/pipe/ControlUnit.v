@@ -18,7 +18,7 @@
 module ControlUnit (
     input       [31:0]  inst,
     output reg  [2:0]   sel_rf_wdata,
-    output reg  [1:0]   sel_rf_waddr,
+    output reg  [4:0]   rf_waddr,
     output              rf_wen,
     output reg  [5:0]   alu_op,
     output reg  [1:0]   sel_alu_b,
@@ -39,6 +39,8 @@ module ControlUnit (
 );
 
 wire [5:0] op;
+wire [4:0] rd;
+wire [4:0] rt;
 wire [5:0] funct;
 wire nop;   // no operation
 
@@ -54,6 +56,8 @@ wire set_shamt;
 
 //// Decode instruction ////
 assign op = inst[31:26];
+assign rt = inst[20:16];
+assign rd = inst[15:11];
 assign funct = inst[5:0];
 
 assign nop = ~|inst;
@@ -100,9 +104,9 @@ end
 
 always @(*) begin
     case(1'b1)
-        (inst_type == `R_TYPE)  : sel_rf_waddr = 2'b00; // R-type
-        (op == `JAL)            : sel_rf_waddr = 2'b01; // `JAL
-        default                 : sel_rf_waddr = 2'b10; // I-type
+        (inst_type == `R_TYPE)  : rf_waddr = rd;    // R-type
+        (op == `JAL)            : rf_waddr = 5'd31; // `JAL
+        default                 : rf_waddr = rt;    // I-type
     endcase
 end
 
@@ -232,7 +236,8 @@ assign md_is_mult = (inst_type == `R_TYPE) & ((funct == `MULT) | (funct == `MULT
 assign md_is_unsigned = (inst_type == `R_TYPE) & ((funct == `DIVU) | (funct == `MULTU));
 
 //// Lo/Hi Register ////
-assign lhr_is_mult  = md_is_mult;
+assign lhr_is_mult = md_is_mult;
+
 assign lhr_wen = (inst_type == `R_TYPE) & (
                         (funct == `MULT)    | 
                         (funct == `MULTU)   |

@@ -85,7 +85,7 @@ wire [31:0] lhr_rdata;
 // ======================================================
 // The signals of Control Unit
 wire [2:0]  cu_sel_rf_wdata;
-wire [1:0]  cu_sel_rf_waddr;
+wire [4:0]  cu_rf_waddr;
 wire        cu_rf_wen;
 wire [5:0]  cu_alu_op;
 wire [1:0]  cu_sel_alu_b;    // Selection for ALU input b
@@ -94,6 +94,7 @@ wire [1:0]  cu_dm_type;
 wire        cu_dm_sign_extend;
 wire        cu_md_is_mult;
 wire        cu_md_is_unsigned;
+wire        cu_lhr_is_mult;
 wire        cu_lhr_wen;
 wire        cu_lhr_ren;
 wire        cu_lhr_is_hi;
@@ -166,7 +167,7 @@ ControlUnit u_CU (
     .inst           (inst),
     // output
     .sel_rf_wdata   (cu_sel_rf_wdata),       // Selection for wdata of Register File
-    .sel_rf_waddr   (cu_sel_rf_waddr),
+    .rf_waddr       (cu_rf_waddr),
     .rf_wen         (cu_rf_wen),
     .alu_op         (cu_alu_op),
     .sel_alu_b      (cu_sel_alu_b),        // Selection for ALU input b
@@ -175,6 +176,7 @@ ControlUnit u_CU (
     .dm_sign_extend (cu_dm_sign_extend),
     .md_is_mult     (cu_md_is_mult),    
     .md_is_unsigned (cu_md_is_unsigned),
+    .lhr_is_mult    (cu_lhr_is_mult),    
     .lhr_wen        (cu_lhr_wen),    
     .lhr_ren        (cu_lhr_ren),    
     .lhr_is_hi      (cu_lhr_is_hi),
@@ -188,7 +190,7 @@ ControlUnit u_CU (
 // ******************************************************
 // ** Register File ** //
 assign sel_rf_wdata = cu_sel_rf_wdata;
-assign sel_rf_waddr = cu_sel_rf_waddr;
+assign rf_waddr     = cu_rf_waddr;
 assign rf_wen       = cu_rf_wen;
 
 always @(*) begin
@@ -198,14 +200,6 @@ always @(*) begin
         3'b010  : rf_wdata = pc_plus_4;          // Load data to $ra
         3'b011  : rf_wdata = lhr_rdata;          // Load data from Lo/Hi Register
         default : rf_wdata = alu_result;         // Load alu result
-    endcase
-end
-
-always @(*) begin
-    case(sel_rf_waddr)
-        2'b00   : rf_waddr = rd;    // R-type
-        2'b01   : rf_waddr = 5'd31; // `JAL
-        default : rf_waddr = rt;    // I-type
     endcase
 end
 
@@ -299,7 +293,7 @@ MultDiv u_MD (
 // ******************************************************
 // ** Lo/Hi Register ** //
 assign lhr_p        = md_result;
-assign lhr_is_mult  = md_is_mult;
+assign lhr_is_mult  = cu_lhr_is_mult;
 assign lhr_wen      = cu_lhr_wen;   
 assign lhr_ren      = cu_lhr_ren;    
 assign lhr_is_hi    = cu_lhr_is_hi;
