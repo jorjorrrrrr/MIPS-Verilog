@@ -13,13 +13,13 @@ module EX_MEM_Reg (
     input           clk,
     input           rst,
     input   [11:0]  ID_EX_mem,
-    input   [6:0]   ID_EX_wb,
+    input   [9:0]   ID_EX_wb,
     output  [11:0]  EX_MEM_mem,
-    output  [6:0]   EX_MEM_wb
+    output  [9:0]   EX_MEM_wb
 );
 
 reg [11:0] mem_r;
-reg [6:0]  wb_r;
+reg [9:0]  wb_r;
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin

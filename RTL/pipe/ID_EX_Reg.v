@@ -15,7 +15,7 @@ module ID_EX_Reg (
     input           clr,
     // From Control Unit
     input   [2:0]   sel_rf_wdata,
-    input   [1:0]   sel_rf_waddr,
+    input   [4:0]   rf_waddr,
     input           rf_wen,
     input   [5:0]   alu_op,
     input   [1:0]   sel_alu_b,
@@ -44,16 +44,16 @@ module ID_EX_Reg (
     
     output  [9:0]   ID_EX_ex,
     output  [11:0]  ID_EX_mem,
-    output  [6:0]   ID_EX_wb
+    output  [9:0]   ID_EX_wb
 );
 
 wire [9:0]  ex;
 wire [11:0] mem;
-wire [6:0]  wb;
+wire [9:0]  wb;
 
 reg [9:0]   ex_r;
 reg [11:0]  mem_r;
-reg [6:0]   wb_r;
+reg [9:0]   wb_r;
 
 // // EX
 // [5:0] alu_op;
@@ -74,7 +74,7 @@ reg [6:0]   wb_r;
 //       lhr_is_hi;
 // // WB
 // [2:0] sel_rf_wdata;
-// [1:0] sel_rf_waddr;
+// [4:0] rf_waddr;
 //       rf_wen;
 //       syscall;
 
@@ -96,7 +96,7 @@ assign mem = {branch_beq,
                 lhr_is_hi};
 
 assign wb = {sel_rf_wdata,
-                sel_rf_waddr,
+                rf_waddr,
                 rf_wen,
                 syscall};
 
@@ -104,12 +104,12 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         ex_r  <= 10'b0;
         mem_r <= 11'b0;
-        wb_r  <= 7'b0;
+        wb_r  <= 10'b0;
     end
     else if (clr) begin
         ex_r  <= 10'b0;
         mem_r <= 11'b0;
-        wb_r  <= 7'b0;
+        wb_r  <= 10'b0;
     end
     else begin
         ex_r  <= ex;
