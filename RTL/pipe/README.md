@@ -14,18 +14,19 @@
 - **Ex.** Only using a memory to fetch instruction and load/store data
   - :white_check_mark: Solution: In MIPS, use 2 memory : data memory and instruction memory
 ### :dart: Data hazards: attempt to use item before ready (inst. i1 followed by inst. i2)
-- :hourglass_flowing_sand: **Read after Write (RAW)** : i2 tries to read operand before i1 writes it
-  - :hourglass_flowing_sand: **R-type-use**
+- **Read after Write (RAW)** : i2 tries to read operand before i1 writes it
+  - **R-type-use**
     - :white_check_mark: Solution 1: insert NOP (operate in software which achieve lower throughput; :x: consider at here)
     - :white_check_mark: Solution 2: Forwarding method (need to design a `forwarding unit`)
-  - :hourglass_flowing_sand: **load-use**
+  - **load-use**
     - :white_check_mark: Solution 1: insert NOP (operate in software which achieve lower throughput; :x: consider at here)
-    - :hourglass_flowing_sand: Solution 2: Stall method (need to design a `hazard detection unit`)
-- :white_check_mark: **Write after Read (WAR)** : i2 tries to write operand before i1 read it
+    - :white_check_mark: Solution 2: Stall method (need to design a `hazard detection unit`)
+- **Write after Read (WAR)** : i2 tries to write operand before i1 read it
   - :white_check_mark: Solution: In MIPS, eliminate WAR by always fetching operands early (ID) in pipeline
-- :white_check_mark: **Write after Write (WAW)** : i2 tries to write operand before i1 write it
+- **Write after Write (WAW)** : i2 tries to write operand before i1 write it
   - :white_check_mark: Solution: In MIPS, eliminate WAW by doing all write backs in order (last stage, static)
 ### :dart: Control hazards: attempt to make decision before condition is evaluated
+- :hourglass_flowing_sand: 
 ### :dart: Design a Forwarding Unit
 Coming Soon.
 ### :dart: Design a Hazard Detection Unit
