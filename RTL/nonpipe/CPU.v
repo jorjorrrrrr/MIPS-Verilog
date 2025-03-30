@@ -63,6 +63,7 @@ wire [31:0] alu_result;
 wire [31:0] dm_addr; 
 wire [31:0] dm_wdata;
 wire [31:0] dm_rdata; 
+wire        dm_ren;
 wire        dm_wen;         // controlled by Control Unit
 wire [1:0]  dm_type;        // controlled by Control Unit
 wire        dm_sign_extend; // controlled by Control Unit
@@ -89,6 +90,7 @@ wire [4:0]  cu_rf_waddr;
 wire        cu_rf_wen;
 wire [5:0]  cu_alu_op;
 wire [1:0]  cu_sel_alu_b;    // Selection for ALU input b
+wire        cu_dm_ren;
 wire        cu_dm_wen;
 wire [1:0]  cu_dm_type;
 wire        cu_dm_sign_extend;
@@ -171,6 +173,7 @@ ControlUnit u_CU (
     .rf_wen         (cu_rf_wen),
     .alu_op         (cu_alu_op),
     .sel_alu_b      (cu_sel_alu_b),        // Selection for ALU input b
+    .dm_ren         (cu_dm_ren),
     .dm_wen         (cu_dm_wen),
     .dm_type        (cu_dm_type),
     .dm_sign_extend (cu_dm_sign_extend),
@@ -251,6 +254,7 @@ assign jump_reg = cu_jump_reg;
 
 // ******************************************************
 // ** Data Memory ** //
+assign dm_ren         = cu_dm_ren;
 assign dm_wen         = cu_dm_wen;
 assign dm_type        = cu_dm_type;
 assign dm_sign_extend = cu_dm_sign_extend;
@@ -264,6 +268,7 @@ assign dm_data        = dm_rdata;
 DataMemory u_DM (
     // input
     .clk        (clk),   
+    .ren        (dm_ren),
     .wen        (dm_wen),
     .rwtype     (dm_type),
     .addr       (dm_addr),   

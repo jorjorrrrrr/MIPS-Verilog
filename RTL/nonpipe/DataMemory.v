@@ -15,6 +15,7 @@
 
 module DataMemory (
     input               clk,    // Clock Source
+    input               ren,    // Active high read enable
     input               wen,    // Active high write enable
     input       [1:0]   rwtype, // Write/Read type 
     input       [31:0]  addr,   // Write/Read address
@@ -30,26 +31,31 @@ integer i;
 reg [31:0] mem [32'h4004000:32'h7fff_ffff];
 
 always@(*) begin
-    case(rwtype)
-        `BYTE_TYPE : begin
-            case(addr[1:0])
-                2'b00   : rdata = {{24{sign_extend & mem[addr>>2][ 7]}}, mem[addr>>2][7:0]};
-                2'b01   : rdata = {{24{sign_extend & mem[addr>>2][15]}}, mem[addr>>2][15:8]};
-                2'b10   : rdata = {{24{sign_extend & mem[addr>>2][23]}}, mem[addr>>2][23:16]};
-                default : rdata = {{24{sign_extend & mem[addr>>2][31]}}, mem[addr>>2][31:24]};
-            endcase
-        end
-        `HALF_TYPE : begin
-            if (addr[1:0] == 2'b00) begin
-                rdata = {{16{sign_extend & mem[addr>>2][15]}}, mem[addr>>2][15:0]};
+    if (ren) begin
+        case(rwtype)
+            `BYTE_TYPE : begin
+                case(addr[1:0])
+                    2'b00   : rdata = {{24{sign_extend & mem[addr>>2][ 7]}}, mem[addr>>2][7:0]};
+                    2'b01   : rdata = {{24{sign_extend & mem[addr>>2][15]}}, mem[addr>>2][15:8]};
+                    2'b10   : rdata = {{24{sign_extend & mem[addr>>2][23]}}, mem[addr>>2][23:16]};
+                    default : rdata = {{24{sign_extend & mem[addr>>2][31]}}, mem[addr>>2][31:24]};
+                endcase
             end
-            else begin  // addr[1:0] == 2'b10
-                rdata = {{16{sign_extend & mem[addr>>2][31]}}, mem[addr>>2][31:16]};
+            `HALF_TYPE : begin
+                if (addr[1:0] == 2'b00) begin
+                    rdata = {{16{sign_extend & mem[addr>>2][15]}}, mem[addr>>2][15:0]};
+                end
+                else begin  // addr[1:0] == 2'b10
+                    rdata = {{16{sign_extend & mem[addr>>2][31]}}, mem[addr>>2][31:16]};
+                end
             end
-        end
-        //`WORD_TYPE : rdata = mem[addr>>2];
-        default    : rdata = mem[addr>>2];
-    endcase
+            //`WORD_TYPE : rdata = mem[addr>>2];
+            default    : rdata = mem[addr>>2];
+        endcase
+    end
+    else begin
+        rdata = 32'b0;
+    end
 end
 
 always @(posedge clk) begin

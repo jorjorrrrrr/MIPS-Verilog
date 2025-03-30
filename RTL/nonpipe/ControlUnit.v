@@ -22,6 +22,7 @@ module ControlUnit (
     output              rf_wen,
     output reg  [5:0]   alu_op,
     output reg  [1:0]   sel_alu_b,
+    output              dm_ren,
     output              dm_wen,
     output reg  [1:0]   dm_type,
     output              dm_sign_extend,
@@ -221,6 +222,7 @@ assign set_shamt = (inst_type == `R_TYPE) & (
                     );
 
 //// Data Memory ////
+assign dm_ren = (op == `LW) | (op == `LB) | (op == `LBU) | (op == `LH) | (op == `LHU);
 assign dm_wen = (op == `SW) | (op == `SB) | (op == `SH);
 always @(*) begin
     case(op)
