@@ -19,6 +19,7 @@ module ID_EX_Reg (
     input           rf_wen,
     input   [5:0]   alu_op,
     input   [1:0]   sel_alu_b,
+    input           dm_ren,
     input           dm_wen,
     input   [1:0]   dm_type,
     input           dm_sign_extend,
@@ -33,26 +34,18 @@ module ID_EX_Reg (
     input           jump,
     input           jump_reg,
     input           syscall,
-    // From instruction
-    // input   [4:0]   rs,
-    // input   [4:0]   rt,
-    // input   [4:0]   rd,
-    // input   [4:0]   shamt,
-    // input   [15:0]  imm,
-    // input   [25:0]  target_address,
-    // input   [31:0]  pc_plus_4,
     
     output  [9:0]   ID_EX_ex,
-    output  [11:0]  ID_EX_mem,
+    output  [12:0]  ID_EX_mem,
     output  [9:0]   ID_EX_wb
 );
 
 wire [9:0]  ex;
-wire [11:0] mem;
+wire [12:0] mem;
 wire [9:0]  wb;
 
 reg [9:0]   ex_r;
-reg [11:0]  mem_r;
+reg [12:0]  mem_r;
 reg [9:0]   wb_r;
 
 // // EX
@@ -65,6 +58,7 @@ reg [9:0]   wb_r;
 //       branch_bne;
 //       jump;
 //       jump_reg;
+//       dm_ren;
 //       dm_wen;
 // [1:0] dm_type;
 //       dm_sign_extend;
@@ -87,6 +81,7 @@ assign mem = {branch_beq,
                 branch_bne,
                 jump,
                 jump_reg,
+                dm_ren,
                 dm_wen,
                 dm_type,
                 dm_sign_extend,
@@ -103,12 +98,12 @@ assign wb = {sel_rf_wdata,
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         ex_r  <= 10'b0;
-        mem_r <= 11'b0;
+        mem_r <= 13'b0;
         wb_r  <= 10'b0;
     end
     else if (clr) begin
         ex_r  <= 10'b0;
-        mem_r <= 11'b0;
+        mem_r <= 13'b0;
         wb_r  <= 10'b0;
     end
     else begin

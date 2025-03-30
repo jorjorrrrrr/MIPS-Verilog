@@ -16,6 +16,7 @@ SRC		:= ./testbench/tb_cpu.sv \
 			../../RTL/pipe/FA.v \
 			../../RTL/pipe/ForwardUnit.v \
 			../../RTL/pipe/HA.v \
+			../../RTL/pipe/HazardDetectionUnit.v \
 			../../RTL/pipe/ID_EX_Reg.v \
 			../../RTL/pipe/InstructionMemory.v \
 			../../RTL/pipe/LoHiRegister.v \
@@ -34,9 +35,11 @@ all: test_cpu
 test_cpu: 
 	$(VCS_RUN) $(SRC) +define+P1+PRINT
 	$(call log, "./LOG/cpu/cpu_pattern1")
-	#$(VCS_RUN) $(SRC) +define+P1_1+PRINT+FSDB
-	#$(call log, "./LOG/cpu/cpu_pattern1_1")
-	#$(VCS_RUN) $(SRC) +define+P2
+	$(VCS_RUN) $(SRC) +define+P1_1+PRINT
+	$(call log, "./LOG/cpu/cpu_pattern1_1")
+	$(VCS_RUN) $(SRC) +define+P1_2+PRINT
+	$(call log, "./LOG/cpu/cpu_pattern1_2")
+	#$(VCS_RUN) $(SRC) +define+P2+FSDB
 	#$(call log, "./LOG/cpu/cpu_pattern2")
 	#$(VCS_RUN) $(SRC) +define+P3
 	#$(call log, "./LOG/cpu/cpu_pattern3")

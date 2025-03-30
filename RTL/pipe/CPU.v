@@ -39,6 +39,33 @@ wire [4:0]  shamt;
 wire [15:0] imm;
 wire [25:0] target_address;
 // ======================================================
+// The signal of Hazard Detection Unit
+wire        PC_hold;
+wire        IM_hold;
+wire        ID_EX_clr;
+// ======================================================
+// The signals of Control Unit
+wire [2:0]  cu_sel_rf_wdata;
+wire [4:0]  cu_rf_waddr;
+wire        cu_rf_wen;
+wire [5:0]  cu_alu_op;
+wire [1:0]  cu_sel_alu_b;    // Selection for ALU input b
+wire        cu_dm_ren;
+wire        cu_dm_wen;
+wire [1:0]  cu_dm_type;
+wire        cu_dm_sign_extend;
+wire        cu_md_is_mult;
+wire        cu_md_is_unsigned;
+wire        cu_lhr_is_mult;
+wire        cu_lhr_wen;
+wire        cu_lhr_ren;
+wire        cu_lhr_is_hi;
+wire        cu_branch_beq;
+wire        cu_branch_bne;
+wire        cu_jump;
+wire        cu_jump_reg;
+wire        cu_syscall;
+// ======================================================
 // The signals for IF/ID stage
 reg  [31:0] pc_plus_4_ID;
 // ======================================================
@@ -55,7 +82,7 @@ wire [31:0] rf_b;
 // ======================================================
 // The signals of ID/EX Register
 wire [9:0]  ID_EX_ex;
-wire [11:0] ID_EX_mem;
+wire [12:0] ID_EX_mem;
 wire [9:0]  ID_EX_wb;
 // ======================================================
 // The signals for ID/EX stage
@@ -70,11 +97,13 @@ reg  [31:0] rf_b_EX;
 reg  [4:0]  rf_raddr0_EX;
 reg  [4:0]  rf_raddr1_EX;
 reg  [31:0] pc_plus_4_EX;
-// control
+// EX control
 wire [5:0]  alu_op_EX;
 wire [1:0]  sel_alu_b_EX;
 wire        md_is_mult_EX;
 wire        md_is_unsigned_EX;
+// MEM control
+wire        dm_ren_EX;
 
 // ======================================================
 // The signals of Forward Unit
@@ -100,7 +129,7 @@ wire        md_is_unsigned; // controlled by Control Unit
 wire [63:0] md_result;
 // ======================================================
 // The signals of EX/MEM Register
-wire [11:0] EX_MEM_mem;
+wire [12:0] EX_MEM_mem;
 wire [9:0]  EX_MEM_wb;
 // ======================================================
 // The signals for EX/MEM stage
@@ -122,6 +151,7 @@ wire        branch_beq_MEM;
 wire        branch_bne_MEM;
 wire        jump_MEM;
 wire        jump_reg_MEM;
+wire        dm_ren_MEM;
 wire        dm_wen_MEM;
 wire [1:0]  dm_type_MEM;
 wire        dm_sign_extend_MEM;
@@ -140,6 +170,7 @@ wire        syscall_MEM;
 wire [31:0] dm_addr; 
 wire [31:0] dm_wdata;
 wire [31:0] dm_rdata; 
+wire        dm_ren;         // controlled by Control Unit
 wire        dm_wen;         // controlled by Control Unit
 wire [1:0]  dm_type;        // controlled by Control Unit
 wire        dm_sign_extend; // controlled by Control Unit
@@ -175,28 +206,6 @@ reg         rf_wen_BUF;
 reg  [4:0]  rf_waddr_BUF;
 reg  [31:0] rf_wdata_BUF;
 
-// ======================================================
-// The signals of Control Unit
-wire [2:0]  cu_sel_rf_wdata;
-wire [4:0]  cu_rf_waddr;
-wire        cu_rf_wen;
-wire [5:0]  cu_alu_op;
-wire [1:0]  cu_sel_alu_b;    // Selection for ALU input b
-wire        cu_dm_wen;
-wire [1:0]  cu_dm_type;
-wire        cu_dm_sign_extend;
-wire        cu_md_is_mult;
-wire        cu_md_is_unsigned;
-wire        cu_lhr_is_mult;
-wire        cu_lhr_wen;
-wire        cu_lhr_ren;
-wire        cu_lhr_is_hi;
-wire        cu_branch_beq;
-wire        cu_branch_bne;
-wire        cu_jump;
-wire        cu_jump_reg;
-wire        cu_syscall;
-
 
 
 // ******************************************************
@@ -214,6 +223,7 @@ ProgramCounter u_PC (
     // input
     .clk            (clk),  
     .rst            (rst),
+    .hold           (PC_hold),  // eliminate data hazard (stall method)
     .jump           (jump),
     .jump_reg       (jump_reg),
     .branch         (branch),
@@ -232,6 +242,7 @@ InstructionMemory u_IM (
     // input
     .clk    (clk), 
     .rst    (rst),
+    .hold   (IM_hold),  // eliminate data hazard (stall method)
     .addr   (pc_next),
     // output
     .inst   (inst) 
@@ -276,6 +287,20 @@ assign imm = inst[15:0];
 assign target_address = inst[25:0];
 
 // ******************************************************
+// ** Hazard Detection Unit ** //
+HazardDetectionUnit u_HDU (
+    // input
+    .rs_ID      (rs),
+    .rt_ID      (rt),
+    .dm_ren_EX  (dm_ren_EX), 
+    .rt_EX      (rt_EX),
+    // output 
+    .PC_hold    (PC_hold),
+    .IM_hold    (IM_hold),
+    .ID_EX_clr  (ID_EX_clr)
+);
+
+// ******************************************************
 // ** Control Unit ** //
 ControlUnit u_CU (
     // input
@@ -286,6 +311,7 @@ ControlUnit u_CU (
     .rf_wen         (cu_rf_wen),
     .alu_op         (cu_alu_op),
     .sel_alu_b      (cu_sel_alu_b),        // Selection for ALU input b
+    .dm_ren         (cu_dm_ren),
     .dm_wen         (cu_dm_wen),
     .dm_type        (cu_dm_type),
     .dm_sign_extend (cu_dm_sign_extend),
@@ -329,12 +355,13 @@ ID_EX_Reg u_ID_EX_Reg (
     // input
     .clk            (clk),   
     .rst            (rst),   
-    .clr            (1'b0),   // TODO: eliminate data hazard (stall method)
+    .clr            (ID_EX_clr),   // eliminate data hazard (stall method)
     .sel_rf_wdata   (cu_sel_rf_wdata),
     .rf_waddr       (cu_rf_waddr),
     .rf_wen         (cu_rf_wen),
     .alu_op         (cu_alu_op),
     .sel_alu_b      (cu_sel_alu_b),
+    .dm_ren         (cu_dm_ren),
     .dm_wen         (cu_dm_wen),
     .dm_type        (cu_dm_type),
     .dm_sign_extend (cu_dm_sign_extend),
@@ -395,6 +422,8 @@ assign {alu_op_EX,
         sel_alu_b_EX,
         md_is_mult_EX,
         md_is_unsigned_EX} = ID_EX_ex;
+
+assign dm_ren_EX = ID_EX_mem[8];
 
 // ******************************************************
 // ** Forward Unit ** //
@@ -545,6 +574,7 @@ assign {branch_beq_MEM,
         branch_bne_MEM,
         jump_MEM,
         jump_reg_MEM,
+        dm_ren_MEM,
         dm_wen_MEM,
         dm_type_MEM,
         dm_sign_extend_MEM,
@@ -560,6 +590,7 @@ assign {sel_rf_wdata_MEM,
 
 // ******************************************************
 // ** Data Memory ** //
+assign dm_ren         = dm_ren_MEM;
 assign dm_wen         = dm_wen_MEM;
 assign dm_type        = dm_type_MEM;
 assign dm_sign_extend = dm_sign_extend_MEM;
@@ -573,6 +604,7 @@ assign dm_data        = dm_rdata;
 DataMemory u_DM (
     // input
     .clk        (clk),   
+    .ren        (dm_ren),
     .wen        (dm_wen),
     .rwtype     (dm_type),
     .addr       (dm_addr),   

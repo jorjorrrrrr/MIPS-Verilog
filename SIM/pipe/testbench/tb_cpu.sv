@@ -11,6 +11,10 @@
     `define INST_PATH "./pattern/pattern1_1/instruction.hex"
     `define DATA_PATH "./pattern/pattern1_1/memory.hex"
     string start_msg = "    Pattern 1_1 : Arithmetic Operation (insert 5 nop)          ";
+`elsif P1_2
+    `define INST_PATH "./pattern/pattern1_2/instruction.hex"
+    `define DATA_PATH "./pattern/pattern1_2/memory.hex"
+    string start_msg = "    Pattern 1_2 : Arithmetic Operation (load-use data hazard)  ";
 `elsif P2
     `define INST_PATH "./pattern/pattern2/instruction.hex"
     `define DATA_PATH "./pattern/pattern2/memory.hex"

@@ -15,9 +15,10 @@
 module ProgramCounter (
     input           clk,          // Clock Source
     input           rst,          // Active high async reset
-    input           branch,       // Branch enable 
+    input           hold,         // eliminate data hazard (stall method)
     input           jump,         // j or jal
     input           jump_reg,     // jr
+    input           branch,       // Branch enable 
     input   [31:0]  pc_plus_4,    // PC <= PC + 4
     input   [31:0]  pc_plus_4_imm,// PC <= PC + 4 + (imm*4)
     input   [25:0]  tar_addr,     // Target address
@@ -32,7 +33,10 @@ always @(posedge clk or posedge rst) begin
         pc_reg <= 32'b0;
     end
     else begin
-        if (jump_reg) begin
+        if (hold) begin
+            pc_reg <= pc_reg;
+        end
+        else if (jump_reg) begin
             pc_reg <= tar_reg_addr;
         end
         else if (jump) begin

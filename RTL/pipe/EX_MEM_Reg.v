@@ -12,19 +12,19 @@
 module EX_MEM_Reg (
     input           clk,
     input           rst,
-    input   [11:0]  ID_EX_mem,
+    input   [12:0]  ID_EX_mem,
     input   [9:0]   ID_EX_wb,
-    output  [11:0]  EX_MEM_mem,
+    output  [12:0]  EX_MEM_mem,
     output  [9:0]   EX_MEM_wb
 );
 
-reg [11:0] mem_r;
+reg [12:0] mem_r;
 reg [9:0]  wb_r;
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
-        mem_r <= 11'b0;
-        wb_r  <= 7'b0;
+        mem_r <= 13'b0;
+        wb_r  <= 10'b0;
     end
     else begin
         mem_r <= ID_EX_mem;
