@@ -169,6 +169,11 @@ wire [2:0]  sel_rf_wdata_WB;
 wire [4:0]  rf_waddr_WB;
 wire        rf_wen_WB;
 wire        syscall_WB;
+// ======================================================
+// The signals for WB/BUF stage
+reg         rf_wen_BUF;
+reg  [4:0]  rf_waddr_BUF;
+reg  [31:0] rf_wdata_BUF;
 
 // ======================================================
 // The signals of Control Unit
@@ -212,7 +217,7 @@ ProgramCounter u_PC (
     .jump           (jump),
     .jump_reg       (jump_reg),
     .branch         (branch),
-    .pc_plus_4      (pc_plus_4_MEM),
+    .pc_plus_4      (pc_plus_4),
     .pc_plus_4_imm  (pc_plus_4_imm_MEM),
     .tar_addr       (target_address_MEM),
     .tar_reg_addr   (target_reg_address_MEM),
@@ -401,6 +406,8 @@ ForwardUnit u_FU (
     .rf_waddr_MEM   (rf_waddr_MEM),
     .rf_wen_WB      (rf_wen_WB),
     .rf_waddr_WB    (rf_waddr_WB),
+    .rf_wen_BUF     (rf_wen_BUF),
+    .rf_waddr_BUF   (rf_waddr_BUF),
     // output
     .sel_rf_a       (sel_rf_a),
     .sel_rf_b       (sel_rf_b)
@@ -411,12 +418,13 @@ always @(*) begin
     case(sel_rf_a)
         2'b01   : begin                 // from MEM
             case(sel_rf_wdata_MEM)
-                3'b001  : rf_a_f = {imm_MEM, 16'b0};  // Load data from imm
-                3'b010  : rf_a_f = pc_plus_4_MEM;     // Load data to $ra
-                default : rf_a_f = alu_result_WB;     // Load alu result
+                3'b001  : rf_a_f = {imm_MEM, 16'b0};    // Load data from imm
+                3'b010  : rf_a_f = pc_plus_4_MEM;       // Load data to $ra
+                default : rf_a_f = alu_result_MEM;      // Load alu result
             endcase
         end
         2'b10   : rf_a_f = rf_wdata;    // from WB
+        2'b11   : rf_a_f = rf_wdata_BUF;// from BUF
         default : rf_a_f = rf_a_EX;     // original
     endcase
 end
@@ -425,12 +433,13 @@ always @(*) begin
     case(sel_rf_b)
         2'b01   : begin                 // from MEM
             case(sel_rf_wdata_MEM)
-                3'b001  : rf_b_f = {imm_MEM, 16'b0};  // Load data from imm
-                3'b010  : rf_b_f = pc_plus_4_MEM;     // Load data to $ra
-                default : rf_b_f = alu_result_WB;     // Load alu result
+                3'b001  : rf_b_f = {imm_MEM, 16'b0};    // Load data from imm
+                3'b010  : rf_b_f = pc_plus_4_MEM;       // Load data to $ra
+                default : rf_b_f = alu_result_MEM;      // Load alu result
             endcase
         end
         2'b10   : rf_b_f = rf_wdata;    // from WB
+        2'b11   : rf_b_f = rf_wdata_BUF;// from BUF
         default : rf_b_f = rf_b_EX;     // original
     endcase
 end
@@ -529,7 +538,7 @@ end
 
 // ----------------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
-// -------------------------------------- EX/MEM stage -------------------------------------- //
+// -------------------------------------- EX/MEM stage ------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
 assign {branch_beq_MEM,
@@ -634,7 +643,7 @@ assign jump_reg = jump_reg_MEM;
 
 // ----------------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
-// -------------------------------------- MEM/WB stage -------------------------------------- //
+// -------------------------------------- MEM/WB stage ------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
 assign {sel_rf_wdata_WB,
@@ -656,6 +665,29 @@ always @(*) begin
         default : rf_wdata = alu_result_WB;     // Load alu result
     endcase
 end
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        rf_wen_BUF      <= 1'b0; 
+        rf_waddr_BUF    <= 5'b0; 
+        rf_wdata_BUF    <= 32'b0; 
+    end
+    else begin
+        rf_wen_BUF      <= rf_wen_WB;
+        rf_waddr_BUF    <= rf_waddr_WB;
+        rf_wdata_BUF    <= rf_wdata;
+    end
+end
+
+// ----------------------------------------------------------------------------------------- //
+// ----------------------------------------------------------------------------------------- //
+// -------------------------------------- WB/BUF stage ------------------------------------- //
+// ----------------------------------------------------------------------------------------- //
+// ----------------------------------------------------------------------------------------- //
+
+// nothing.
+
+
 
 // -------------------------------------- Others -------------------------------------- //
 
