@@ -26,7 +26,8 @@
 - **Write after Write (WAW)** : i2 tries to write operand before i1 write it
   - :white_check_mark: Solution: In MIPS, eliminate WAW by doing all write backs in order (last stage, static)
 ### :dart: Control hazards: attempt to make decision before condition is evaluated
-- :hourglass_flowing_sand: 
-### :dart: Design a Forwarding Unit
-Coming Soon.
-### :dart: Design a Hazard Detection Unit
+- **Branch hazards** : In conventional design, branch condition is determined at MEM stage, which wastes a lot of time and decreases throughput.
+  - :white_check_mark: Solution: move the decision about branch conditions earlier in the pipeline (like ID stage).
+- **Challenges of Further Reducing Delay**: A direct approach to complete branch condition is to predict that the branch is always not taken (flush the instruction after branch), which can decrease throughput in certain scenarios, such as nested loops.
+  - :white_check_mark: Solution 1: Compiler rescheduling, Delayed branch (:x: consider at here)
+  - :hourglass_flowing_sand: Solution 2: Dynamic branch prediction like 1-bit predictor and 2-bit predictor.
