@@ -16,6 +16,7 @@
 module InstructionMemory (
     input           clk,    // Clock Source
     input           rst,
+    input           clr,
     input           hold,   // eliminate data hazard (stall method)
     input   [31:0]  addr,   // Read address (4 Giga btye)
     output  [31:0]  inst    // Instruction
@@ -31,7 +32,10 @@ always @(posedge clk or posedge rst) begin
         inst_reg <= 32'b0;
     end
     else begin
-        if (hold) begin
+        if (clr) begin
+            inst_reg <= 32'b0;
+        end
+        else if (hold) begin
             inst_reg <= inst_reg;
         end
         else begin

@@ -27,6 +27,9 @@ wire [31:0] pc_plus_4;
 wire [31:0] pc_plus_4_imm;
 wire [31:0] pc_next;
 // ======================================================
+// The signals for IF/ID stage
+reg  [31:0] pc_plus_4_ID;
+// ======================================================
 // The signals of Instruction Memory
 wire [31:0] inst;
 // For decoding instruction
@@ -65,9 +68,6 @@ wire        cu_branch_bne;
 wire        cu_jump;
 wire        cu_jump_reg;
 wire        cu_syscall;
-// ======================================================
-// The signals for IF/ID stage
-reg  [31:0] pc_plus_4_ID;
 // ======================================================
 // The signals of Register File
 wire [2:0]  sel_rf_wdata;   // controlled by Control Unit
@@ -205,12 +205,6 @@ wire [2:0]  sel_rf_wdata_WB;
 wire [4:0]  rf_waddr_WB;
 wire        rf_wen_WB;
 wire        syscall_WB;
-// ======================================================
-// The signals for WB/BUF stage
-reg         rf_wen_BUF;
-reg  [4:0]  rf_waddr_BUF;
-reg  [31:0] rf_wdata_BUF;
-
 
 
 // ******************************************************
@@ -233,9 +227,9 @@ ProgramCounter u_PC (
     .jump_reg       (jump_reg),
     .branch         (branch),
     .pc_plus_4      (pc_plus_4),
-    .pc_plus_4_imm  (pc_plus_4_imm_MEM),
-    .tar_addr       (target_address_MEM),
-    .tar_reg_addr   (target_reg_address_MEM),
+    .pc_plus_4_imm  (pc_plus_4_imm),
+    .tar_addr       (target_address),
+    .tar_reg_addr   (target_reg_address),
     // output
     .pc_next        (pc_next)
 );
@@ -247,6 +241,7 @@ InstructionMemory u_IM (
     // input
     .clk    (clk), 
     .rst    (rst),
+    .clr    (clr),
     .hold   (IM_hold),  // eliminate data hazard (stall method)
     .addr   (pc_next),
     // output
@@ -304,6 +299,16 @@ HazardDetectionUnit u_HDU (
     .IM_hold    (IM_hold),
     .ID_EX_clr  (ID_EX_clr)
 );
+
+assign equal    = ~|(rf_a_f ^ rf_b_f);
+assign branch   = (equal & cu_branch_beq) | (~equal & cu_branch_bne); // used for Program Counter
+assign jump     = cu_jump;
+assign jump_reg = cu_jump_reg;
+
+assign pc_plus_4_imm = pc_plus_4_ID + {{14{imm[15]}}, imm[15:0], 2'b00};
+assign target_reg_address = rf_a_f;
+
+assign clr = branch | jump | jump_reg;
 
 // ******************************************************
 // ** Control Unit ** //
@@ -372,45 +377,59 @@ ForwardUnit u_FU (
 
 // ** Forwarding the data ** //
 always @(*) begin
-    case(sel_rf_a)
-        2'b01   : begin                 // from MEM
-            case(sel_rf_wdata_EX)
-                3'b001  : rf_a_f = {imm_EX, 16'b0};    // Load data from imm
-                3'b010  : rf_a_f = pc_plus_4_EX;       // Load data to $ra
-                default : rf_a_f = alu_result;      // Load alu result
-            endcase
-        end
-        2'b10   : begin                 // from MEM
-            case(sel_rf_wdata_MEM)
-                3'b001  : rf_a_f = {imm_MEM, 16'b0};    // Load data from imm
-                3'b010  : rf_a_f = pc_plus_4_MEM;       // Load data to $ra
-                default : rf_a_f = alu_result_MEM;      // Load alu result
-            endcase
-        end
-        2'b11   : rf_a_f = rf_wdata;    // from WB
-        default : rf_a_f = rf_a;     // original
-    endcase
+    if (rf_raddr0 == 5'b0) begin    // If raddr == $zero, force it to zero
+        rf_a_f = 32'b0;
+    end
+    else begin
+        case(sel_rf_a)
+            2'b01   : begin                 // from EX
+                case(sel_rf_wdata_EX)
+                    3'b001  : rf_a_f = {imm_EX, 16'b0};     // Load data from imm
+                    3'b010  : rf_a_f = pc_plus_4_EX;        // Load data to $ra
+                    default : rf_a_f = alu_result;          // Load alu result
+                endcase
+            end
+            2'b10   : begin                 // from MEM
+                case(sel_rf_wdata_MEM)
+                    3'b000  : rf_a_f = dm_data;             // Load data from Data Memory
+                    3'b001  : rf_a_f = {imm_MEM, 16'b0};    // Load data from imm
+                    3'b010  : rf_a_f = pc_plus_4_MEM;       // Load data to $ra
+                    3'b011  : rf_a_f = lhr_rdata;           // Load data from Lo/Hi Register
+                    default : rf_a_f = alu_result_MEM;      // Load alu result
+                endcase
+            end
+            2'b11   : rf_a_f = rf_wdata;    // from WB
+            default : rf_a_f = rf_a;     // original
+        endcase
+    end
 end
 
 always @(*) begin
-    case(sel_rf_b)
-        2'b01   : begin                 // from MEM
-            case(sel_rf_wdata_EX)
-                3'b001  : rf_b_f = {imm_EX, 16'b0};    // Load data from imm
-                3'b010  : rf_b_f = pc_plus_4_EX;       // Load data to $ra
-                default : rf_b_f = alu_result;      // Load alu result
-            endcase
-        end
-        2'b10   : begin                 // from MEM
-            case(sel_rf_wdata_MEM)
-                3'b001  : rf_b_f = {imm_MEM, 16'b0};    // Load data from imm
-                3'b010  : rf_b_f = pc_plus_4_MEM;       // Load data to $ra
-                default : rf_b_f = alu_result_MEM;      // Load alu result
-            endcase
-        end
-        2'b11   : rf_b_f = rf_wdata;    // from WB
-        default : rf_b_f = rf_b;     // original
-    endcase
+    if (rf_raddr1 == 5'b0) begin    // If raddr == $zero, force it to zero
+        rf_b_f = 32'b0;
+    end
+    else begin
+        case(sel_rf_b)
+            2'b01   : begin                 // from EX
+                case(sel_rf_wdata_EX)
+                    3'b001  : rf_b_f = {imm_EX, 16'b0};     // Load data from imm
+                    3'b010  : rf_b_f = pc_plus_4_EX;        // Load data to $ra
+                    default : rf_b_f = alu_result;          // Load alu result
+                endcase
+            end
+            2'b10   : begin                 // from MEM
+                case(sel_rf_wdata_MEM)
+                    3'b000  : rf_b_f = dm_data;             // Load data from Data Memory
+                    3'b001  : rf_b_f = {imm_MEM, 16'b0};    // Load data from imm
+                    3'b010  : rf_b_f = pc_plus_4_MEM;       // Load data to $ra
+                    3'b011  : rf_b_f = lhr_rdata;           // Load data from Lo/Hi Register
+                    default : rf_b_f = alu_result_MEM;      // Load alu result
+                endcase
+            end
+            2'b11   : rf_b_f = rf_wdata;    // from WB
+            default : rf_b_f = rf_b;     // original
+        endcase
+    end
 end
 
 
@@ -551,8 +570,8 @@ EX_MEM_Reg u_EX_MEM_Reg (
 
 // ******************************************************
 // ** Pipeline Register ** //
-assign pc_plus_4_imm = pc_plus_4_EX + {{14{imm_EX[15]}}, imm_EX[15:0], 2'b00};
-assign target_reg_address = rf_a_EX;
+//assign pc_plus_4_imm = pc_plus_4_EX + {{14{imm_EX[15]}}, imm_EX[15:0], 2'b00};
+//assign target_reg_address = rf_a_EX;
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -692,9 +711,9 @@ end
 
 // ******************************************************
 // ** Condition Signals ** //
-assign branch   = (alu_zero_MEM & branch_beq_MEM) | (~alu_zero_MEM & branch_bne_MEM); // used for Program Counter
-assign jump     = jump_MEM;
-assign jump_reg = jump_reg_MEM;
+//assign branch   = (alu_zero_MEM & branch_beq_MEM) | (~alu_zero_MEM & branch_bne_MEM); // used for Program Counter
+//assign jump     = jump_MEM;
+//assign jump_reg = jump_reg_MEM;
 
 // ----------------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------------- //
@@ -720,28 +739,6 @@ always @(*) begin
         default : rf_wdata = alu_result_WB;     // Load alu result
     endcase
 end
-
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        rf_wen_BUF      <= 1'b0; 
-        rf_waddr_BUF    <= 5'b0; 
-        rf_wdata_BUF    <= 32'b0; 
-    end
-    else begin
-        rf_wen_BUF      <= rf_wen_WB;
-        rf_waddr_BUF    <= rf_waddr_WB;
-        rf_wdata_BUF    <= rf_wdata;
-    end
-end
-
-// ----------------------------------------------------------------------------------------- //
-// ----------------------------------------------------------------------------------------- //
-// -------------------------------------- WB/BUF stage ------------------------------------- //
-// ----------------------------------------------------------------------------------------- //
-// ----------------------------------------------------------------------------------------- //
-
-// nothing.
-
 
 
 // -------------------------------------- Others -------------------------------------- //
