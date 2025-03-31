@@ -19,6 +19,10 @@
     `define INST_PATH "./pattern/pattern2/instruction.hex"
     `define DATA_PATH "./pattern/pattern2/memory.hex"
     string start_msg = "    Pattern 2 : Arithmetic Operation (with Jump and Print Str) ";
+`elsif P2_1
+    `define INST_PATH "./pattern/pattern2_1/instruction.hex"
+    `define DATA_PATH "./pattern/pattern2_1/memory.hex"
+    string start_msg = "    Pattern 2_1 : Arithmetic Operation (with Jump and Print Str, and insert NOP) ";
 `elsif P3
     `define INST_PATH "./pattern/pattern3/instruction.hex"
     `define DATA_PATH "./pattern/pattern3/memory.hex"

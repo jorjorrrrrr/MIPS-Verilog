@@ -33,14 +33,16 @@ endef
 all: test_cpu
 
 test_cpu: 
-	$(VCS_RUN) $(SRC) +define+P1+PRINT
-	$(call log, "./LOG/cpu/cpu_pattern1")
-	$(VCS_RUN) $(SRC) +define+P1_1+PRINT
-	$(call log, "./LOG/cpu/cpu_pattern1_1")
-	$(VCS_RUN) $(SRC) +define+P1_2+PRINT
-	$(call log, "./LOG/cpu/cpu_pattern1_2")
+	#$(VCS_RUN) $(SRC) +define+P1+PRINT
+	#$(call log, "./LOG/cpu/cpu_pattern1")
+	#$(VCS_RUN) $(SRC) +define+P1_1+PRINT
+	#$(call log, "./LOG/cpu/cpu_pattern1_1")
+	#$(VCS_RUN) $(SRC) +define+P1_2+PRINT
+	#$(call log, "./LOG/cpu/cpu_pattern1_2")
 	#$(VCS_RUN) $(SRC) +define+P2+FSDB
 	#$(call log, "./LOG/cpu/cpu_pattern2")
+	$(VCS_RUN) $(SRC) +define+P2_1+FSDB
+	$(call log, "./LOG/cpu/cpu_pattern2_1")
 	#$(VCS_RUN) $(SRC) +define+P3
 	#$(call log, "./LOG/cpu/cpu_pattern3")
 	#$(VCS_RUN) $(SRC) +define+P4
