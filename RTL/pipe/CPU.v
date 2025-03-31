@@ -80,6 +80,12 @@ wire [4:0]  rf_raddr1;
 wire [31:0] rf_a;
 wire [31:0] rf_b;
 // ======================================================
+// The signals of Forward Unit
+wire [1:0]  sel_rf_a;
+wire [1:0]  sel_rf_b;
+reg  [31:0] rf_a_f; // rf_a after forwarding
+reg  [31:0] rf_b_f; // rf_b after forwarding
+// ======================================================
 // The signals of ID/EX Register
 wire [9:0]  ID_EX_ex;
 wire [12:0] ID_EX_mem;
@@ -104,13 +110,12 @@ wire        md_is_mult_EX;
 wire        md_is_unsigned_EX;
 // MEM control
 wire        dm_ren_EX;
+// WB control
+wire [2:0]  sel_rf_wdata_EX;
+wire [4:0]  rf_waddr_EX;
+wire        rf_wen_EX;
+wire        syscall_EX;
 
-// ======================================================
-// The signals of Forward Unit
-wire [1:0]  sel_rf_a;
-wire [1:0]  sel_rf_b;
-reg  [31:0] rf_a_f; // rf_a after forwarding
-reg  [31:0] rf_b_f; // rf_b after forwarding
 // ======================================================
 // The signals of Arithmetic Logic Unit
 wire [31:0] alu_a;
@@ -349,6 +354,67 @@ RegisterFile u_RF (
 );
 
 // ******************************************************
+// ** Forward Unit ** //
+ForwardUnit u_FU (
+    // input
+    .rf_raddr0_ID   (rf_raddr0),
+    .rf_raddr1_ID   (rf_raddr1),
+    .rf_wen_EX      (rf_wen_EX),
+    .rf_waddr_EX    (rf_waddr_EX),
+    .rf_wen_MEM     (rf_wen_MEM),
+    .rf_waddr_MEM   (rf_waddr_MEM),
+    .rf_wen_WB      (rf_wen_WB),
+    .rf_waddr_WB    (rf_waddr_WB),
+    // output
+    .sel_rf_a       (sel_rf_a),
+    .sel_rf_b       (sel_rf_b)
+);
+
+// ** Forwarding the data ** //
+always @(*) begin
+    case(sel_rf_a)
+        2'b01   : begin                 // from MEM
+            case(sel_rf_wdata_EX)
+                3'b001  : rf_a_f = {imm_EX, 16'b0};    // Load data from imm
+                3'b010  : rf_a_f = pc_plus_4_EX;       // Load data to $ra
+                default : rf_a_f = alu_result;      // Load alu result
+            endcase
+        end
+        2'b10   : begin                 // from MEM
+            case(sel_rf_wdata_MEM)
+                3'b001  : rf_a_f = {imm_MEM, 16'b0};    // Load data from imm
+                3'b010  : rf_a_f = pc_plus_4_MEM;       // Load data to $ra
+                default : rf_a_f = alu_result_MEM;      // Load alu result
+            endcase
+        end
+        2'b11   : rf_a_f = rf_wdata;    // from WB
+        default : rf_a_f = rf_a;     // original
+    endcase
+end
+
+always @(*) begin
+    case(sel_rf_b)
+        2'b01   : begin                 // from MEM
+            case(sel_rf_wdata_EX)
+                3'b001  : rf_b_f = {imm_EX, 16'b0};    // Load data from imm
+                3'b010  : rf_b_f = pc_plus_4_EX;       // Load data to $ra
+                default : rf_b_f = alu_result;      // Load alu result
+            endcase
+        end
+        2'b10   : begin                 // from MEM
+            case(sel_rf_wdata_MEM)
+                3'b001  : rf_b_f = {imm_MEM, 16'b0};    // Load data from imm
+                3'b010  : rf_b_f = pc_plus_4_MEM;       // Load data to $ra
+                default : rf_b_f = alu_result_MEM;      // Load alu result
+            endcase
+        end
+        2'b11   : rf_b_f = rf_wdata;    // from WB
+        default : rf_b_f = rf_b;     // original
+    endcase
+end
+
+
+// ******************************************************
 // ** ID/EX Register ** //
 
 ID_EX_Reg u_ID_EX_Reg (
@@ -405,8 +471,8 @@ always @(posedge clk or posedge rst) begin
         shamt_EX            <= shamt;
         imm_EX              <= imm;
         target_address_EX   <= target_address;
-        rf_a_EX             <= rf_a;
-        rf_b_EX             <= rf_b;
+        rf_a_EX             <= rf_a_f;
+        rf_b_EX             <= rf_b_f;
         rf_raddr0_EX        <= rf_raddr0;
         rf_raddr1_EX        <= rf_raddr1;
         pc_plus_4_EX        <= pc_plus_4_ID;
@@ -423,67 +489,24 @@ assign {alu_op_EX,
         md_is_mult_EX,
         md_is_unsigned_EX} = ID_EX_ex;
 
+assign {sel_rf_wdata_EX,
+        rf_waddr_EX,
+        rf_wen_EX,
+        syscall_EX} = ID_EX_wb;
+
 assign dm_ren_EX = ID_EX_mem[8];
-
-// ******************************************************
-// ** Forward Unit ** //
-ForwardUnit u_FU (
-    // input
-    .rf_raddr0_EX   (rf_raddr0_EX),
-    .rf_raddr1_EX   (rf_raddr1_EX),
-    .rf_wen_MEM     (rf_wen_MEM),
-    .rf_waddr_MEM   (rf_waddr_MEM),
-    .rf_wen_WB      (rf_wen_WB),
-    .rf_waddr_WB    (rf_waddr_WB),
-    .rf_wen_BUF     (rf_wen_BUF),
-    .rf_waddr_BUF   (rf_waddr_BUF),
-    // output
-    .sel_rf_a       (sel_rf_a),
-    .sel_rf_b       (sel_rf_b)
-);
-
-// ** Forwarding the data ** //
-always @(*) begin
-    case(sel_rf_a)
-        2'b01   : begin                 // from MEM
-            case(sel_rf_wdata_MEM)
-                3'b001  : rf_a_f = {imm_MEM, 16'b0};    // Load data from imm
-                3'b010  : rf_a_f = pc_plus_4_MEM;       // Load data to $ra
-                default : rf_a_f = alu_result_MEM;      // Load alu result
-            endcase
-        end
-        2'b10   : rf_a_f = rf_wdata;    // from WB
-        2'b11   : rf_a_f = rf_wdata_BUF;// from BUF
-        default : rf_a_f = rf_a_EX;     // original
-    endcase
-end
-
-always @(*) begin
-    case(sel_rf_b)
-        2'b01   : begin                 // from MEM
-            case(sel_rf_wdata_MEM)
-                3'b001  : rf_b_f = {imm_MEM, 16'b0};    // Load data from imm
-                3'b010  : rf_b_f = pc_plus_4_MEM;       // Load data to $ra
-                default : rf_b_f = alu_result_MEM;      // Load alu result
-            endcase
-        end
-        2'b10   : rf_b_f = rf_wdata;    // from WB
-        2'b11   : rf_b_f = rf_wdata_BUF;// from BUF
-        default : rf_b_f = rf_b_EX;     // original
-    endcase
-end
 
 // ******************************************************
 // ** Arthimetic Logic Unit ** //
 assign alu_op    = alu_op_EX;
 assign sel_alu_b = sel_alu_b_EX;
-assign alu_a     = (sel_alu_b == 2'b10) ? rf_b_f : rf_a_f;
+assign alu_a     = (sel_alu_b == 2'b10) ? rf_b_EX : rf_a_EX;
 always @(*) begin
     case(sel_alu_b)
         2'b00 : alu_b = {16'b0, imm_EX};
         2'b01 : alu_b = {{16{imm_EX[15]}}, imm_EX};
         2'b10 : alu_b = {27'b0, shamt_EX};
-        default : alu_b = rf_b_f;
+        default : alu_b = rf_b_EX;
     endcase
 end
 
